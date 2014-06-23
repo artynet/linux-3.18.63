@@ -30,6 +30,7 @@
 #include <linux/spi/spi_bitbang.h>
 #include <linux/spi/spi_gpio.h>
 
+#include <linux/console.h>
 
 /*
  * This bitbanging SPI master driver should help make systems usable
@@ -243,12 +244,47 @@ static void spi_gpio_chipselect(struct spi_device *spi, int is_active)
 	}
 }
 
+/* --- support for console on SPI ----------------- */
+
+/* SPICONS_DLY (ns) is half the duration of a bit. 10us -> ~ 50kbps */
+#define SPICONS_DLY 10000
+
+static void spi_console_write (struct console *co, const char *s,
+                             unsigned count)
+{
+	struct spi_device *spi_dev = (struct spi_device*)co->data;
+
+	if (!spi_dev)
+		return;
+
+	spi_gpio_chipselect(spi_dev, 1);
+
+	while(count) {
+		if (((*s) & 0xff) == '\n')
+		 spi_gpio_txrx_word_mode0(spi_dev, SPICONS_DLY, '\r', 8);
+		 spi_gpio_txrx_word_mode0(spi_dev, SPICONS_DLY, *s, 8);
+		s++;
+		count--;
+	}
+}
+
+static struct console spicons = {
+	.name           = "spicons",
+	.write          = spi_console_write,
+	.flags          = CON_PRINTBUFFER,
+};
+
+/* --- End console on SPI ------------------------------------- */
+
 static int spi_gpio_setup(struct spi_device *spi)
 {
 	unsigned int		cs;
 	int			status = 0;
 	struct spi_gpio		*spi_gpio = spi_to_spi_gpio(spi);
 	struct device_node	*np = spi->master->dev.of_node;
+
+	if (!spicons.data)
+		spicons.data = spi;
 
 	if (np) {
 		/*
@@ -282,6 +318,9 @@ static int spi_gpio_setup(struct spi_device *spi)
 		if (!spi->controller_state && cs != SPI_GPIO_NO_CHIPSELECT)
 			gpio_free(cs);
 	}
+
+	register_console(&spicons);
+
 	return status;
 }
 
@@ -289,6 +328,9 @@ static void spi_gpio_cleanup(struct spi_device *spi)
 {
 	struct spi_gpio *spi_gpio = spi_to_spi_gpio(spi);
 	unsigned int cs = spi_gpio->cs_gpios[spi->chip_select];
+
+	unregister_console(&spicons);
+	spicons.data = NULL;
 
 	if (cs != SPI_GPIO_NO_CHIPSELECT)
 		gpio_free(cs);
