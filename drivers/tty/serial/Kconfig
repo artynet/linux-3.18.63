@@ -1435,7 +1435,7 @@ config SERIAL_XILINX_PS_UART_CONSOLE
 	  Enable a Cadence UART port to be the system console.
 
 config SERIAL_AR933X
-	tristate "AR933X serial port support"
+	tristate "AR933X serial / AR9342 high speed serial port support"
 	depends on HAVE_CLK && SOC_AR933X
 	select SERIAL_CORE
 	help
@@ -1446,14 +1446,14 @@ config SERIAL_AR933X
 	  module will be called ar933x_uart.
 
 config SERIAL_AR933X_CONSOLE
-	bool "Console on AR933X serial port"
+	bool "Console on AR933X serial / AR934X high speed serial port"
 	depends on SERIAL_AR933X=y
 	select SERIAL_CORE_CONSOLE
 	help
 	  Enable a built-in UART port of the AR933X to be the system console.
 
 config SERIAL_AR933X_NR_UARTS
-	int "Maximum number of AR933X serial ports"
+	int "Maximum number of AR933X serial / AR934X high speed serial ports"
 	depends on SERIAL_AR933X
 	default "2"
 	help
