@@ -31,6 +31,7 @@
 #include <asm/div64.h>
 
 #include <asm/mach-ath79/ar933x_uart.h>
+#include <asm/mach-ath79/ar933x_uart_platform.h>
 
 #define DRIVER_NAME "ar933x-uart"
 
@@ -617,6 +618,7 @@ static struct uart_driver ar933x_uart_driver = {
 static int ar933x_uart_probe(struct platform_device *pdev)
 {
 	struct ar933x_uart_port *up;
+	struct ar933x_uart_platform_data *pdata;
 	struct uart_port *port;
 	struct resource *mem_res;
 	struct resource *irq_res;
@@ -624,6 +626,10 @@ static int ar933x_uart_probe(struct platform_device *pdev)
 	unsigned int baud;
 	int id;
 	int ret;
+
+	pdata = pdev->dev.platform_data;
+	if (!pdata)
+		return -EINVAL;
 
 	np = pdev->dev.of_node;
 	if (config_enabled(CONFIG_OF) && np) {
@@ -684,7 +690,7 @@ static int ar933x_uart_probe(struct platform_device *pdev)
 	port->iotype = UPIO_MEM32;
 
 	port->regshift = 2;
-	port->fifosize = AR933X_UART_FIFO_SIZE;
+	port->fifosize = pdata->fifosize;
 	port->ops = &ar933x_uart_ops;
 
 	baud = ar933x_uart_get_baud(port->uartclk, AR933X_UART_MAX_SCALE, 1);

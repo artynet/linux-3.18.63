@@ -20,6 +20,7 @@
 
 #include <asm/mach-ath79/ath79.h>
 #include <asm/mach-ath79/ar71xx_regs.h>
+#include <asm/mach-ath79/ar933x_uart.h>
 #include <asm/mach-ath79/ar933x_uart_platform.h>
 #include "common.h"
 #include "dev-common.h"
@@ -127,12 +128,14 @@ void __init ath79_register_uart(void)
 		platform_device_register(&ath79_uart_device);
 	} else if (soc_is_ar933x()) {
 		ar93xx_uart_data.uartclk = uart_clk_rate;
+		ar93xx_uart_data.fifosize = AR933X_UART_FIFO_SIZE;
 		platform_device_register(&ar933x_uart_device);
 	}
 	else if (soc_is_ar934x()) {
 		ath79_uart_data[0].uartclk = uart_clk_rate;
 		platform_device_register(&ath79_uart_device);
 		ar93xx_uart_data.uartclk = uart_clk_rate;
+		ar93xx_uart_data.fifosize = AR934X_UART_FIFO_SIZE;
 		platform_device_register(&ar934x_uart_device);
 	} else {
 		BUG();
