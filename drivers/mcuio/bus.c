@@ -23,10 +23,6 @@ static inline int mcuio_device_is_host_controller(struct mcuio_device *mdev)
 	    mdev->id.class == MCUIO_CLASS_SOFT_HOST_CONTROLLER;
 }
 
-static struct bus_attribute def_bus_attrs[] = {
-	__ATTR_NULL,
-};
-
 static void mcuio_dev_default_release(struct device *dev)
 {
 	struct mcuio_device *mdev = to_mcuio_dev(dev);
@@ -62,7 +58,6 @@ static int mcuio_match_device(struct device *dev, struct device_driver *drv)
 
 struct bus_type mcuio_bus_type = {
 	.name = "mcuio",
-	.bus_attrs = def_bus_attrs,
 	.match = mcuio_match_device,
 };
 
