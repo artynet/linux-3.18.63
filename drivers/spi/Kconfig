@@ -242,6 +242,13 @@ config SPI_GPIO_OLD
 
 	  If unsure, say N.
 
+config SPI_TTY_PLAIN
+	tristate "Plain SPI TTY Driver"
+	depends on SPI_GPIO
+	help
+	  This package contains a TTY SPI driver using an interrupt gpio
+	  for data receive.
+
 config SPI_IMX
 	tristate "Freescale i.MX SPI controllers"
 	depends on ARCH_MXC || COMPILE_TEST
