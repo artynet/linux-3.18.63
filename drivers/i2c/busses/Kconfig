@@ -1001,6 +1001,12 @@ config I2C_ELEKTOR
 	  This support is also available as a module.  If so, the module
 	  will be called i2c-elektor.
 
+config I2C_MCUIO
+	tristate "MCUIO I2C driver"
+	depends on MCUIO
+	help
+	  Add support for mcuio i2c driver
+
 config I2C_PCA_ISA
 	tristate "PCA9564/PCA9665 on an ISA bus"
 	depends on ISA
