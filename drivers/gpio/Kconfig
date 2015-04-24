@@ -158,6 +158,12 @@ config GPIO_EP93XX
 	depends on ARCH_EP93XX
 	select GPIO_GENERIC
 
+config GPIO_MCUIO
+	tristate "MCUIO gpio driver"
+	depends on MCUIO
+	help
+	  This enables an MCUIO driver for MCUIO GPIO devices
+
 config GPIO_ZEVIO
 	bool "LSI ZEVIO SoC memory mapped GPIOs"
 	depends on ARM && OF_GPIO
