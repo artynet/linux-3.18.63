@@ -15,6 +15,7 @@
 #include <linux/of_gpio.h>
 #include <linux/pwm.h>
 #include <linux/delay.h>
+#include <linux/platform_data/ssd1307.h>
 
 #define SSD1307FB_DATA			0x40
 #define SSD1307FB_COMMAND		0x80
@@ -55,6 +56,8 @@ struct ssd1307fb_par {
 	u32 pwm_period;
 	int reset;
 	u32 width;
+	u32 display_offset;
+	u8 pins_config;
 };
 
 struct ssd1307fb_array {
@@ -342,7 +345,7 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
 
 	/* set display offset value */
 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_DISPLAY_OFFSET);
-	ret = ssd1307fb_write_cmd(par->client, 0x20);
+	ret = ssd1307fb_write_cmd(par->client, par->display_offset);
 	if (ret < 0)
 		return ret;
 
@@ -360,7 +363,7 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
 
 	/* Set COM pins configuration */
 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COM_PINS_CONFIG);
-	ret = ret & ssd1307fb_write_cmd(par->client, 0x22);
+	ret = ret & ssd1307fb_write_cmd(par->client, par->pins_config);
 	if (ret < 0)
 		return ret;
 
@@ -421,19 +424,36 @@ static const struct of_device_id ssd1307fb_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
 
-static int ssd1307fb_probe(struct i2c_client *client,
-			   const struct i2c_device_id *id)
+static struct ssd1307fb_ops *
+__get_display_ops(struct ssd1307_platform_data *plat)
+{
+	switch (plat->type) {
+	case SSD1307_TYPE_1306:
+		return &ssd1307fb_ssd1306_ops;
+	case SSD1307_TYPE_1307:
+		return &ssd1307fb_ssd1307_ops;
+	default:
+		return NULL;
+	}
+	return NULL;
+}
+
+static int ssd1307fb_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	struct fb_info *info;
 	struct device_node *node = client->dev.of_node;
 	u32 vmem_size;
 	struct ssd1307fb_par *par;
+	struct ssd1307_platform_data *plat = NULL;
 	u8 *vmem;
 	int ret;
 
 	if (!node) {
-		dev_err(&client->dev, "No device tree data found!\n");
-		return -EINVAL;
+		plat = dev_get_platdata(&client->dev);
+		if (!plat) {
+			dev_err(&client->dev, "No platform data/dt node found!\n");
+			return -EINVAL;
+		}
 	}
 
 	info = framebuffer_alloc(sizeof(struct ssd1307fb_par), &client->dev);
@@ -445,25 +465,41 @@ static int ssd1307fb_probe(struct i2c_client *client,
 	par = info->par;
 	par->info = info;
 	par->client = client;
+	par->ops = plat ? __get_display_ops(plat) :
+		(struct ssd1307fb_ops *)of_match_device(ssd1307fb_of_match,
+							&client->dev)->data;
+	if (!par->ops) {
+		dev_err(&client->dev, "Could not get display ops\n");
+		return -EINVAL;
+	}
 
-	par->ops = (struct ssd1307fb_ops *)of_match_device(ssd1307fb_of_match,
-							   &client->dev)->data;
+	par->reset = plat ? plat->reset_gpio :
+		of_get_named_gpio(client->dev.of_node,
+				  "reset-gpios", 0);
 
-	par->reset = of_get_named_gpio(client->dev.of_node,
-					 "reset-gpios", 0);
+	par->pins_config = plat ? plat->pins_config : 0x22;
+	par->display_offset = plat ? plat->display_offset : 0x20;
+
 	if (!gpio_is_valid(par->reset)) {
 		ret = -EINVAL;
 		goto fb_alloc_error;
 	}
 
-	if (of_property_read_u32(node, "solomon,width", &par->width))
-		par->width = 96;
+	if (plat) {
+		par->width = plat->width;
+		par->height = plat->height;
+		par->page_offset = plat->page_offset;
+	} else {
+		if (of_property_read_u32(node, "solomon,width", &par->width))
+			par->width = 96;
 
-	if (of_property_read_u32(node, "solomon,height", &par->height))
-		par->width = 16;
+		if (of_property_read_u32(node, "solomon,height", &par->height))
+			par->width = 16;
 
-	if (of_property_read_u32(node, "solomon,page-offset", &par->page_offset))
-		par->page_offset = 1;
+		if (of_property_read_u32(node, "solomon,page-offset",
+					 &par->page_offset))
+			par->page_offset = 1;
+	}
 
 	vmem_size = par->width * par->height / 8;
 
