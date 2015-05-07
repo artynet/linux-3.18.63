@@ -22,7 +22,7 @@
 #include <linux/gpio.h>
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
-#include <linux/i2c/pca953x.h>
+#include <linux/platform_data/pca953x.h>
 
 #include <linux/mcuio.h>
 #include <linux/mcuio_ids.h>
@@ -122,6 +122,8 @@ static const struct mcuio_device_id dio_drv_ids[] = {
 	{
 		.vendor = MCUIO_VENDOR_DOGHUNTER,
 		.device = MCUIO_DEVICE_DIGITALIO_SHIELD,
+		.class = MCUIO_CLASS_SHIELD,
+		.class_mask = 0xffff,
 	},
 	/* Terminator */
 	{
