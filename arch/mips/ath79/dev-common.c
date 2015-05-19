@@ -70,6 +70,38 @@ static struct resource ar933x_uart_resources[] = {
 };
 
 static struct ar933x_uart_platform_data ar93xx_uart_data;
+static struct ar933x_uart_clk_params ar933x_clk_params[] = {
+	{
+		.baudrate = 115200,
+		.scale = 0x000c,
+		.step = 0x2000
+	},
+	{
+		.baudrate = 230400,
+#ifdef CONFIG_ATH79_TWEAK_UART_BAUDRATES_FOR_ATMEGA32U4
+		.scale = 0x0017,
+		.step = 0x7ae0
+#else
+		.scale = 0x0017,
+		.step = 0x713f
+#endif
+	},
+	{
+		.baudrate = 460800,
+#ifdef CONFIG_ATH79_TWEAK_UART_BAUDRATES_FOR_ATMEGA32U4
+		.scale = 0x000b,
+		.step = 0x7ae0
+#else
+		.scale = 0x000b,
+		.step = 0x713f
+#endif
+	},
+
+	{
+		.baudrate = 0,
+	}
+};
+
 static struct platform_device ar933x_uart_device = {
 	.name		= "ar933x-uart",
 	.id		= -1,
@@ -91,6 +123,37 @@ static struct resource ar934x_uart_resources[] = {
 		.end	= ATH79_MISC_IRQ(6),
 		.flags	= IORESOURCE_IRQ,
 	},
+};
+
+static struct ar933x_uart_clk_params ar934x_clk_params[] = {
+	{
+		.baudrate = 115200,
+		.scale = 0x0003,
+		.step = 0x05e6,
+	},
+	{
+		.baudrate = 230400,
+#ifdef CONFIG_ATH79_TWEAK_UART_BAUDRATES_FOR_ATMEGA32U4
+		.scale = 0x0017,
+		.step = 0x4ccd,
+#else
+		.scale = 0x0017,
+		.step = 0x46c7,
+#endif
+	},
+	{
+		.baudrate = 460800,
+#ifdef CONFIG_ATH79_TWEAK_UART_BAUDRATES_FOR_ATMEGA32U4
+		.scale = 0x000b,
+		.step = 0x4ccd,
+#else
+		.scale = 0x000b,
+		.step = 0x46c7,
+#endif
+	},
+	{
+		.baudrate = 0,
+	}
 };
 
 static struct platform_device ar934x_uart_device = {
@@ -128,6 +191,7 @@ void __init ath79_register_uart(void)
 		platform_device_register(&ath79_uart_device);
 	} else if (soc_is_ar933x()) {
 		ar93xx_uart_data.uartclk = uart_clk_rate;
+		ar93xx_uart_data.clkparams = ar933x_clk_params;
 		ar93xx_uart_data.fifosize = AR933X_UART_FIFO_SIZE;
 		platform_device_register(&ar933x_uart_device);
 	}
@@ -135,6 +199,7 @@ void __init ath79_register_uart(void)
 		ath79_uart_data[0].uartclk = uart_clk_rate;
 		platform_device_register(&ath79_uart_device);
 		ar93xx_uart_data.uartclk = uart_clk_rate;
+		ar93xx_uart_data.clkparams = ar934x_clk_params;
 		ar93xx_uart_data.fifosize = AR934X_UART_FIFO_SIZE;
 		platform_device_register(&ar934x_uart_device);
 	} else {
