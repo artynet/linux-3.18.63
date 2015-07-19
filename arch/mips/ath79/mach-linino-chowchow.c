@@ -38,8 +38,13 @@
 #define CHOWCHOW_GPIO_LED0		12
 #define CHOWCHOW_GPIO_LED1		11
 
+#ifdef LININO_TIAN
+#define TIAN_GPIO_SWDIO			13
+#define TIAN_GPIO_SWDCLK		14
+#else
 #define CHOWCHOW_GPIO_UART0_RX	13
 #define CHOWCHOW_GPIO_UART0_TX	14
+#endif
 #define CHOWCHOW_GPIO_UART1_RX	9
 #define CHOWCHOW_GPIO_UART1_TX	10
 #define CHOWCHOW_GPIO_OE2		15
@@ -227,6 +232,10 @@ static void __init chowchow_setup(void)
 	v |= (CHOWCHOW_GPIO_UART1_RX << 16);
 	__raw_writel(v, reg);
 
+#ifdef LININO_TIAN
+	ath79_gpio_output_select(TIAN_GPIO_SWDIO, AR934X_GPIO_OUT_GPIO);
+	ath79_gpio_output_select(TIAN_GPIO_SWDCLK, AR934X_GPIO_OUT_GPIO);
+#else
 	/* UART0 (low-speed) configuration */
 	r = gpio_request(CHOWCHOW_GPIO_UART0_TX, NULL);
 	if (r) {
@@ -246,6 +255,7 @@ static void __init chowchow_setup(void)
 	v &= ~0x0000ff00;
 	v |= (CHOWCHOW_GPIO_UART0_RX << 8);
 	__raw_writel(v, reg);
+#endif
 
 	ath79_register_m25p80(NULL);
 
@@ -293,4 +303,3 @@ static void __init chowchow_setup(void)
 }
 
 MIPS_MACHINE(ATH79_MACH_LININO_LEI, "linino-lei", "Linino Lei", chowchow_setup);
-MIPS_MACHINE(ATH79_MACH_LININO_TIAN, "linino-tian", "Arduino Tian", chowchow_setup);
