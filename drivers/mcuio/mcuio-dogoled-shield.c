@@ -32,7 +32,7 @@
 #include "mcuio-shields.h"
 
 static unsigned short ssd1307_addr = 0x3c;
-static unsigned int ssd1307_rst = 120;
+static unsigned int ssd1307_rst = 108;
 module_param(ssd1307_addr, ushort, 0644);
 module_param(ssd1307_rst, uint, 0644);
 

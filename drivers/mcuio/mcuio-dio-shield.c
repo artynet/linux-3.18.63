@@ -39,7 +39,7 @@ module_param(pca9555_base, uint, 0644);
 static struct pca953x_platform_data pca9555_plat;
 
 static struct mcuio_shld_i2c_info i2c_lst[] = {
-	MCUIO_SHLD_I2C_DEV("pca9555", &pca9555_addr, &pca9555_plat, 104),
+	MCUIO_SHLD_I2C_DEV("pca9555", &pca9555_addr, &pca9555_plat, 111),
 };
 
 static int mcuio_dio_probe(struct mcuio_device *mdev)
