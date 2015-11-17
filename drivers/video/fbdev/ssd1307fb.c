@@ -547,9 +547,16 @@ static int ssd1307fb_probe(struct i2c_client *client, const struct i2c_device_id
 	i2c_set_clientdata(client, info);
 
 	/* Reset the screen */
-	gpio_set_value(par->reset, 0);
+	if (gpio_cansleep(par->reset))
+		gpio_set_value_cansleep(par->reset, 0);
+	else
+		gpio_set_value(par->reset, 0);
 	udelay(4);
-	gpio_set_value(par->reset, 1);
+
+	if (gpio_cansleep(par->reset))
+		gpio_set_value_cansleep(par->reset, 1);
+	else
+		gpio_set_value(par->reset, 1);
 	udelay(4);
 
 	if (par->ops->init) {
