@@ -720,6 +720,7 @@ static void __cleanup_outstanding_requests(struct mcuio_hc_data *data)
 static int mcuio_host_controller_remove(struct mcuio_device *mdev)
 {
 	struct mcuio_hc_data *data = dev_get_drvdata(&mdev->dev);
+	struct regmap *map;
 	atomic_set(&data->removing, 1);
 	barrier();
 	kthread_stop(data->enum_kworker_task);
@@ -727,6 +728,9 @@ static int mcuio_host_controller_remove(struct mcuio_device *mdev)
 	flush_kthread_worker(&data->tx_kworker);
 	kthread_stop(data->tx_kworker_task);
 	__cleanup_outstanding_requests(data);
+	map = dev_get_regmap(&mdev->dev, NULL);
+	if (map)
+		regmap_exit(map);
 	devm_kfree(&mdev->dev, data);
 	return 0;
 }
