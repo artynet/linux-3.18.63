@@ -96,10 +96,8 @@ static int mcuio_lucky_probe(struct mcuio_device *mdev)
 
 	data->i2c_adap = mcuio_get_i2c_adapter(mdev);
 
-	if (!data->i2c_adap) {
-		dev_err(&mdev->dev, "error setting up i2c adapter\n");
-		return -ENODEV;
-	}
+	if (!data->i2c_adap)
+		return -EPROBE_DEFER;
 
 	data->i2c_info = i2c_lst;
 	data->i2c_cnt = ARRAY_SIZE(i2c_lst);
