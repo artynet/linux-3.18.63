@@ -116,6 +116,15 @@ static int mcuio_lucky_probe(struct mcuio_device *mdev)
 				return -EINVAL;
 			}
 
+			/* HACK this is needed to enable pullup */
+			ret = devm_gpio_request_one(&mdev->dev, gpio,
+				GPIOF_DIR_IN, "lucky-shield");
+			if (ret < 0)
+				return ret;
+			gpio_direction_output(gpio, 1);
+			gpio_direction_input(gpio);
+			devm_gpio_free(&mdev->dev, gpio);
+
 			i->info.irq = gpio_to_irq(gpio);
 		}
 
