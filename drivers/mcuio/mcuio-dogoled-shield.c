@@ -46,7 +46,7 @@ static struct ssd1307_platform_data ssd1307_plat = {
 };
 
 static struct mcuio_shld_i2c_info i2c_lst[] = {
-	MCUIO_SHLD_I2C_DEV("ssd1307fb", &ssd1307_addr, &ssd1307_plat, -1),
+	MCUIO_SHLD_I2C_DEV("ssd1307fb", &ssd1307_addr, &ssd1307_plat, ""),
 };
 
 static int mcuio_dogoled_probe(struct mcuio_device *mdev)

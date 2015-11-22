@@ -39,7 +39,7 @@ module_param(pca9555_base, uint, 0644);
 static struct pca953x_platform_data pca9555_plat;
 
 static struct mcuio_shld_i2c_info i2c_lst[] = {
-	MCUIO_SHLD_I2C_DEV("pca9555", &pca9555_addr, &pca9555_plat, 111),
+	MCUIO_SHLD_I2C_DEV("pca9555", &pca9555_addr, &pca9555_plat, "D8"),
 };
 
 static int mcuio_dio_probe(struct mcuio_device *mdev)
@@ -73,17 +73,26 @@ static int mcuio_dio_probe(struct mcuio_device *mdev)
 		i = &data->i2c_info[cnt];
 		i->info.addr = *i->paddr;
 
-		/* HACK this is needed to enable pullup */
-		ret = devm_gpio_request_one(&mdev->dev, i->gpio_irq, GPIOF_DIR_IN,
-				    "digitalio-shield");
-		if (ret < 0)
-			return ret;
-		gpio_direction_output(i->gpio_irq, 1);
-		gpio_direction_input(i->gpio_irq);
-		devm_gpio_free(&mdev->dev, i->gpio_irq);
+		if (strlen(i->gpio_irq_label)) {
+			int gpio;
+			gpio = mcuio_get_gpio_nr(i->gpio_irq_label);
+			if (gpio < 0) {
+				dev_err(&mdev->dev, "gpio %s not found\n",
+					i->gpio_irq_label);
+				return -EINVAL;
+			}
 
-		i->info.irq = (i->gpio_irq >= 0) ?
-			gpio_to_irq(i->gpio_irq) : 0;
+			/* HACK this is needed to enable pullup */
+			ret = devm_gpio_request_one(&mdev->dev, gpio,
+				GPIOF_DIR_IN, "digitalio-shield");
+			if (ret < 0)
+				return ret;
+			gpio_direction_output(gpio, 1);
+			gpio_direction_input(gpio);
+			devm_gpio_free(&mdev->dev, gpio);
+
+			i->info.irq = gpio_to_irq(gpio);
+		}
 
 		i->i2c_client = i2c_new_device(data->i2c_adap, &i->info);
 		if (!i->i2c_client)

@@ -7,6 +7,7 @@ struct mcuio_shld_i2c_info {
 	unsigned short *paddr;
 	struct i2c_client *i2c_client;
 	struct i2c_board_info info;
+	const char *gpio_irq_label;
 	int gpio_irq;
 };
 
@@ -17,7 +18,7 @@ struct mcuio_shld_data {
 };
 
 #define MCUIO_SHLD_I2C_DEV(t, pa, p, g) \
-	{.paddr = pa, .gpio_irq = g,\
+	{.paddr = pa, .gpio_irq_label = g,\
 		.info = {.platform_data = p, .type = t}}
 
 #endif /* __MCUIO_SHIELDS_H__ */
