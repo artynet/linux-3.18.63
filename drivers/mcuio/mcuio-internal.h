@@ -13,6 +13,8 @@ void mcuio_put_bus(unsigned bus);
 
 struct i2c_adapter *mcuio_get_i2c_adapter(struct mcuio_device *mdev);
 
+int mcuio_get_gpio_nr(const char *label);
+
 struct mcuio_device *mcuio_bus_find_hc(int bus);
 
 struct mcuio_device *mcuio_add_soft_local_irq_ctrl(struct mcuio_device *hc,

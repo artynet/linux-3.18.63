@@ -17,6 +17,7 @@
 #include <linux/spinlock.h>
 #include <linux/bitops.h>
 #include <linux/i2c.h>
+#include <linux/gpio.h>
 #include <linux/mcuio_ids.h>
 #include "mcuio-internal.h"
 
@@ -81,6 +82,47 @@ struct i2c_adapter *mcuio_get_i2c_adapter(struct mcuio_device *mdev)
 	return to_i2c_adapter(adap_dev);
 }
 EXPORT_SYMBOL(mcuio_get_i2c_adapter);
+
+struct mcuio_gpio_data {
+	const char *label;
+	int nr;
+};
+
+static int __match_gpiochip(struct gpio_chip *chip, void *__gpio_data)
+{
+	struct mcuio_gpio_data *data = __gpio_data;
+	const char *ptr;
+	int i;
+
+	if (!chip->names)
+		return 0;
+
+	for (i = 0; i < chip->ngpio; i++, ptr++) {
+		ptr = chip->names[i];
+		if (!ptr)
+			continue;
+		if (!strcmp(ptr, data->label)) {
+			data->nr = i + chip->base;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int mcuio_get_gpio_nr(const char *label)
+{
+	struct gpio_chip *chip;
+	struct mcuio_gpio_data data;
+	data.label = label;
+	chip = gpiochip_find(&data, __match_gpiochip);
+	if (!chip) {
+		pr_debug("%s: gpio %s not found\n", __func__, label);
+		return -EINVAL;
+	}
+	pr_debug("%s: gpio %s found: %d\n", __func__, label, data.nr);
+	return data.nr;
+}
+EXPORT_SYMBOL(mcuio_get_gpio_nr);
 
 static int __init mcuio_init(void)
 {
