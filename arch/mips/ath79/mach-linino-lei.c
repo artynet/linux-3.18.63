@@ -38,18 +38,13 @@
 #define CHOWCHOW_GPIO_LED0		12
 #define CHOWCHOW_GPIO_LED1		11
 
-#ifdef LININO_TIAN
-#define TIAN_GPIO_SWDIO			13
-#define TIAN_GPIO_SWDCLK		14
-#define CHOWCHOW_GPIO_CONF_BTN	17
-#else
-#define CHOWCHOW_GPIO_UART0_RX	13
-#define CHOWCHOW_GPIO_UART0_TX	14
-#define CHOWCHOW_GPIO_CONF_BTN	0
-#endif
+//#define CHOWCHOW_GPIO_UART0_RX	13
+//#define CHOWCHOW_GPIO_UART0_TX	14
 #define CHOWCHOW_GPIO_UART1_RX	9
 #define CHOWCHOW_GPIO_UART1_TX	10
-#define CHOWCHOW_GPIO_OE2		15
+#define CHOWCHOW_GPIO_OE_UART	15
+#define CHOWCHOW_GPIO_OE_SPI   14
+#define CHOWCHOW_GPIO_CONF_BTN	0
 #define CHOWCHOW_GPIO_UART_POL	GPIOF_OUT_INIT_LOW
 
 #define	CHOWCHOW_GPIO_SPI_SCK	4
@@ -59,6 +54,8 @@
 
 #define AR934X_GPIO_UART1_TD_OUT	79	/* table 2.16 */
 #define AR934X_GPIO_UART0_SOUT	24	/* table 2.16 */
+
+#define _USE_UART0_PINS_AS_GPIO_
 
 #define CHOWCHOW_GPIO_SPI_INTERRUPT	16
 #define DS_PCIE_CALDATA_OFFSET	0x5000
@@ -133,7 +130,6 @@ static struct platform_device linino_spi1_device = {
 	.dev.platform_data = &spi_bus1,
 };
 
-#ifndef LININO_TIAN
 /* SPI devices on Linino */
 static struct spi_board_info linino_spi_info[] = {
 	/*{
@@ -154,7 +150,6 @@ static struct spi_board_info linino_spi_info[] = {
 		.platform_data		= (void *) CHOWCHOW_GPIO_SPI_INTERRUPT,
 	},
 };
-#endif
 
 /**
  * Enable the software SPI controller emulated by GPIO signals
@@ -163,16 +158,9 @@ static void ds_register_spi(void) {
 	pr_info("mach-linino: enabling GPIO SPI Controller");
 
 	/* Enable level shifter on SPI signals */
-#ifdef LININO_TIAN
-	gpio_set_value(CHOWCHOW_GPIO_OE2, 0);
-#else
-	gpio_set_value(CHOWCHOW_GPIO_OE2, 1);
-#endif
-
-#ifndef LININO_TIAN
+	gpio_set_value(CHOWCHOW_GPIO_OE_SPI, 0);
 	/* Register SPI devices */
 	spi_register_board_info(linino_spi_info, ARRAY_SIZE(linino_spi_info));
-#endif
 	/* Register GPIO SPI controller */
 	platform_device_register(&linino_spi1_device);
 }
@@ -184,23 +172,28 @@ static void __init ds_setup_level_shifter_oe(void)
 {
 	int err;
 
-	/* enable OE2 of level shifter */
-    pr_info("Setting GPIO OE %d\n", CHOWCHOW_GPIO_OE2);
-    err= gpio_request_one(CHOWCHOW_GPIO_OE2,
-			GPIOF_OUT_INIT_LOW | GPIOF_EXPORT_DIR_FIXED, "OE");
+	/* enable UART OE level shifter */
+    	err= gpio_request_one(CHOWCHOW_GPIO_OE_UART,
+			GPIOF_OUT_INIT_LOW | GPIOF_EXPORT_DIR_FIXED, "OE_UART");
 	if (err)
-		pr_err("mach-linino: error setting GPIO OE\n");
+		pr_err("mach-linino: error setting GPIO OE UART\n");
+
+	/* enable SPI OE level shifter */
+    	err= gpio_request_one(CHOWCHOW_GPIO_OE_SPI,
+			GPIOF_OUT_INIT_LOW | GPIOF_EXPORT_DIR_FIXED, "OE_SPI");
+	if (err)
+		pr_err("mach-linino: error setting GPIO OE SPI\n");
 }
 
 
-static void __init chowchow_setup(void)
+static void __init lei_setup(void)
 {
 	u8 *art = (u8 *) KSEG1ADDR(0x1fff0000);
 	static u8 mac[6];
-    int r;
-    void __iomem *reg;
-    unsigned v;
-
+	int r;
+	void __iomem *reg;
+	unsigned v;
+	
 	/* make lan / wan leds software controllable */
 	ath79_gpio_output_select(CHOWCHOW_GPIO_LED0, AR934X_GPIO_OUT_GPIO);
 	ath79_gpio_output_select(CHOWCHOW_GPIO_LED1, AR934X_GPIO_OUT_GPIO);
@@ -242,10 +235,7 @@ static void __init chowchow_setup(void)
 	v |= (CHOWCHOW_GPIO_UART1_RX << 16);
 	__raw_writel(v, reg);
 
-#ifdef LININO_TIAN
-	ath79_gpio_output_select(TIAN_GPIO_SWDIO, AR934X_GPIO_OUT_GPIO);
-	ath79_gpio_output_select(TIAN_GPIO_SWDCLK, AR934X_GPIO_OUT_GPIO);
-#else
+#ifndef _USE_UART0_PINS_AS_GPIO_
 	/* UART0 (low-speed) configuration */
 	r = gpio_request(CHOWCHOW_GPIO_UART0_TX, NULL);
 	if (r) {
@@ -281,7 +271,7 @@ static void __init chowchow_setup(void)
 	mac[3] |= 0x08;
 	ath79_register_wmac(art + DS_CALDATA_OFFSET, mac);
 	pr_info("%s-%d: wlan0 MAC:%02x:%02x:%02x:%02x:%02x:%02x\n", __FUNCTION__, __LINE__, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
+	
 	mac[3] &= 0xF7;
 	pr_info("%s-%d: eth0  MAC:%02x:%02x:%02x:%02x:%02x:%02x\n", __FUNCTION__, __LINE__, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	ap91_pci_init(art + DS_PCIE_CALDATA_OFFSET, mac);
@@ -304,12 +294,12 @@ static void __init chowchow_setup(void)
 	ath79_eth0_data.mii_bus_dev = &ath79_mdio0_device.dev;
 	ath79_eth0_pll_data.pll_1000 = 0x06000000;
 	ath79_register_eth(0);
-
+	
 	/* enable OE of level shifters */
 	ds_setup_level_shifter_oe();
-
+	
 	/* Register Software SPI controller */
 	ds_register_spi();
 }
 
-MIPS_MACHINE(ATH79_MACH_LININO_LEI, "linino-lei", "Linino Lei", chowchow_setup);
+MIPS_MACHINE(ATH79_MACH_LININO_LEI, "linino-lei", "Linino Lei", lei_setup);
