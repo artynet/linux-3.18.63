@@ -304,4 +304,4 @@ static void __init lei_setup(void)
 	ds_register_spi();
 }
 
-MIPS_MACHINE(ATH79_MACH_LININO_LEI, "linino-lei", "Linino Lei", lei_setup);
+MIPS_MACHINE(ATH79_MACH_LININO_LEI, "linino-lei", "Arduino Lei", lei_setup);

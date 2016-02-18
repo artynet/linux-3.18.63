@@ -316,4 +316,4 @@ static void __init tian_setup(void)
 	ds_register_spi();
 }
 
-MIPS_MACHINE(ATH79_MACH_LININO_TIAN, "linino-tian", "Linino Tian", tian_setup);
+MIPS_MACHINE(ATH79_MACH_LININO_TIAN, "linino-tian", "Arduino Tian", tian_setup);
