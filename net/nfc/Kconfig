@@ -28,6 +28,18 @@ config NFC_DIGITAL
 	  To compile this support as a module, choose M here: the module will
 	  be called nfc_digital.
 
+config NFC_DIGITAL_UART
+	depends on NFC_DIGITAL && TTY
+	tristate "Digital over UART protocol support"
+	default n
+	help
+	  This implements an UART LDisc framework for digital core based
+	  drivers.
+
+	  Say Y if you use a digital driver that requires UART link layer.
+	  Choose M to build this support as a module.
+	  The module will be called nfc_digital_uart.
+
 source "net/nfc/nci/Kconfig"
 source "net/nfc/hci/Kconfig"
 

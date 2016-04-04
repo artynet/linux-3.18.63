@@ -1,0 +1,34 @@
+config NFC_ST
+	tristate "ST NFC Transceiver driver"
+	depends on NFC_DIGITAL
+	help
+	  This enables the ST NFC transceiver (e.g. CR95HF / ST95HF)
+	  core framework. These transceivers implement the
+	  digital specifications.
+	  The core framework registers with the digital core and
+	  implements the digital ops. On the other side, it
+	  exposes a framework for the phy drivers. Phy drivers
+	  implements ops that are required by the core for
+	  communication between the transceiver and the host.
+	  Phy driver can be an UART LDisc driver or an SPI slave
+	  driver.
+
+	  Say Y here to compile support for ST NFC transceiver core
+	  framework into the kernel or say M to compile it as module.
+
+config NFC_ST_UART
+	tristate "ST NFC-over-UART driver"
+	depends on NFC_DIGITAL && NFC_DIGITAL_UART
+	select NFC_ST
+	help
+	  ST NFC-over-UART driver.
+
+	  This driver is an UART LDisc driver that helps
+	  ST NFC transceiver core framework communicate with
+	  the transceiver device over the UART interface.
+	  The driver registers as a phy driver with the core,
+	  and as an LDisc driver with the digital UART LDisc
+	  framework.
+
+	  Say Y here to compile support for ST NFC-over-UART driver
+	  into the kernel or say M to compile it as module.
