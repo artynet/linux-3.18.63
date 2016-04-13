@@ -465,6 +465,8 @@ static int iso14443_config_fdt(struct nfcst_context *context, int wtxm)
 	new_params[1].param_offset = 3;
 	new_params[1].new_param_val = wtxm;
 
+	printk("curr_protocol is %d\n", nfcddev->curr_protocol);
+
 	switch (nfcddev->curr_protocol) {
 	case NFC_PROTO_ISO14443:
 		result = nfcst_send_recv_cmd(context,

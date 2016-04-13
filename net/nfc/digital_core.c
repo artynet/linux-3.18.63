@@ -625,7 +625,10 @@ static int digital_activate_target(struct nfc_dev *nfc_dev,
 		return -EBUSY;
 	}
 
+
 	ddev->curr_protocol = protocol;
+
+	printk("digital_activate_target called with protocol %d\n", ddev->curr_protocol);
 
 	return 0;
 }
