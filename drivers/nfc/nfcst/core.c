@@ -69,6 +69,7 @@
 #define DEVICE_TIMEOUT_ERROR		0x87
 #define DEVICE_NFCA_CRC_ERR_MASK	0x20
 #define DEVICE_NFCB_CRC_ERR_MASK	0x01
+#define TYPE2_RESP_ACK_NACK		0x90
 
 /* device transmission flag values */
 #define TRFLAG_NFCA_SHORT_FRAME		0x07
@@ -468,8 +469,6 @@ static int iso14443_config_fdt(struct nfcst_context *context, int wtxm)
 
 	printk("curr_protocol is %d\n", nfcddev->curr_protocol);
 
-	printk("curr_protocol is %d\n", nfcddev->curr_protocol);
-
 	switch (nfcddev->curr_protocol) {
 	case NFC_PROTO_ISO14443:
 		result = nfcst_send_recv_cmd(context,
@@ -599,6 +598,11 @@ static int nfcst_error_handling(struct nfcst_context *context,
 	/* Check for CRC err only if CRC is present in the tag response */
 	switch (context->current_rf_tech) {
 	case NFC_DIGITAL_RF_TECH_106A:
+		/* In case of Type2 ACK and NACK response, no CRC check*/
+		if (context->ddev->curr_protocol == NFC_PROTO_MIFARE){
+			if(skb_resp->data[0] == TYPE2_RESP_ACK_NACK)
+				break;
+		}
 		if (context->sendrcv_trflag == TRFLAG_NFCA_STD_FRAME_CRC) {
 			error_byte = skb_resp->data[res_len - 3];
 			if (error_byte & DEVICE_NFCA_CRC_ERR_MASK) {
@@ -651,6 +655,14 @@ static void nfcst_response_handler(struct nfcst_context *context,
 	}
 	cb_arg->rats = false;
 
+	/** CRC handling **/
+	/* For MIFARE Type2, CRC handling will be done by digital framework */
+	if (context->current_rf_tech == NFC_DIGITAL_RF_TECH_106A &&
+	    context->ddev->curr_protocol == NFC_PROTO_MIFARE) {
+		/* Removing Transceiver specific data */
+		skb_trim(skb_resp, (skb_len - 3));
+		return;
+	}
 	/* Remove CRC bytes only if received frames data has an eod (CRC) */
 	switch (context->current_rf_tech) {
 	case NFC_DIGITAL_RF_TECH_106A:
