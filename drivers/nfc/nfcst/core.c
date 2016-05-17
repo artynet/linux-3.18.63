@@ -467,8 +467,6 @@ static int iso14443_config_fdt(struct nfcst_context *context, int wtxm)
 	new_params[1].param_offset = 3;
 	new_params[1].new_param_val = wtxm;
 
-	printk("curr_protocol is %d\n", nfcddev->curr_protocol);
-
 	switch (nfcddev->curr_protocol) {
 	case NFC_PROTO_ISO14443:
 		result = nfcst_send_recv_cmd(context,
@@ -590,7 +588,7 @@ static int nfcst_error_handling(struct nfcst_context *context,
 			result = -ETIMEDOUT;
 		else
 			result = -EIO;
-		dev_info(dev, "Error frame[0]: 0x%x and result %d\n",
+		dev_dbg(dev, "Error frame[0]: 0x%x and result %d\n",
 			 skb_resp->data[0], result);
 		return  result;
 	}
@@ -599,8 +597,8 @@ static int nfcst_error_handling(struct nfcst_context *context,
 	switch (context->current_rf_tech) {
 	case NFC_DIGITAL_RF_TECH_106A:
 		/* In case of Type2 ACK and NACK response, no CRC check*/
-		if (context->ddev->curr_protocol == NFC_PROTO_MIFARE){
-			if(skb_resp->data[0] == TYPE2_RESP_ACK_NACK)
+		if (context->ddev->curr_protocol == NFC_PROTO_MIFARE) {
+			if (skb_resp->data[0] == TYPE2_RESP_ACK_NACK)
 				break;
 		}
 		if (context->sendrcv_trflag == TRFLAG_NFCA_STD_FRAME_CRC) {
