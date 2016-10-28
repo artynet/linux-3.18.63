@@ -35,8 +35,8 @@
 #include <linux/spi/spi_gpio.h>
 
 #define CHOWCHOW_GPIO_MCU_RESET	17
-#define CHOWCHOW_GPIO_LED0		12
-#define CHOWCHOW_GPIO_LED1		11
+#define CHOWCHOW_GPIO_LED0		11
+#define CHOWCHOW_GPIO_LED1		12
 
 #define LININO_TIAN 1
 
@@ -69,11 +69,11 @@ static struct gpio_led chowchow_leds_gpio[] __initdata = {
 	{
 		.name		= "usb",
 		.gpio		= CHOWCHOW_GPIO_LED0,
-		.active_low	= 0,
+		.active_low	= 1,
 	}, {
 		.name		= "wlan",
 		.gpio		= CHOWCHOW_GPIO_LED1,
-		.active_low	= 0,
+		.active_low	= 1,
 	}
 };
 
