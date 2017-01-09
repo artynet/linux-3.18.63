@@ -49,9 +49,6 @@
 #define CHOWCHOW_GPIO_OE2		15
 #define CHOWCHOW_GPIO_UART_POL	GPIOF_OUT_INIT_LOW
 
-#define	CHOWCHOW_GPIO_SPI_SCK	4
-#define CHOWCHOW_GPIO_SPI_CS0	1
-
 #define AR934X_GPIO_UART1_TD_OUT	79	/* table 2.16 */
 #define AR934X_GPIO_UART0_SOUT	24	/* table 2.16 */
 
@@ -157,7 +154,6 @@ static void __init chowchow_setup(void)
 	/* enable reset button */
 	ath79_gpio_output_select(CHOWCHOW_GPIO_CONF_BTN, AR934X_GPIO_OUT_GPIO);
 	ath79_gpio_function_enable(AR934X_GPIO_FUNC_JTAG_DISABLE);
-	ath79_gpio_output_select(CHOWCHOW_GPIO_SPI_SCK, AR934X_GPIO_OUT_GPIO);
 	ath79_gpio_output_select(CHOWCHOW_GPIO_MCU_RESET, AR934X_GPIO_OUT_GPIO);
 
 	/* UART1 (high-speed) configuration */
