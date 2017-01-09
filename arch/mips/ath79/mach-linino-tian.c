@@ -42,7 +42,7 @@
 #define CHOWCHOW_GPIO_LED0		11
 #define CHOWCHOW_GPIO_LED1		12
 #define CHOWCHOW_GPIO_LED2		2
-#define CHOWCHOW_GPIO_LED3		3
+#define CHOWCHOW_GPIO_GPIO3		3
 
 #define CHOWCHOW_GPIO_UART1_RX	9
 #define CHOWCHOW_GPIO_UART1_TX	10
@@ -71,12 +71,8 @@ static struct gpio_led chowchow_leds_gpio[] __initdata = {
 		.active_low	= 1,
 	},
 	{
-		.name		= "LED0",
+		.name		= "LED2",
 		.gpio		= CHOWCHOW_GPIO_LED2,
-		.active_low	= 1,
-	}, {
-		.name		= "GP0",
-		.gpio		= CHOWCHOW_GPIO_LED3,
 		.active_low	= 1,
 	}
 };
@@ -157,7 +153,6 @@ static void __init chowchow_setup(void)
 	ath79_gpio_output_select(CHOWCHOW_GPIO_LED0, AR934X_GPIO_OUT_GPIO);
 	ath79_gpio_output_select(CHOWCHOW_GPIO_LED1, AR934X_GPIO_OUT_GPIO);
 	ath79_gpio_output_select(CHOWCHOW_GPIO_LED2, AR934X_GPIO_OUT_GPIO);
-	ath79_gpio_output_select(CHOWCHOW_GPIO_LED3, AR934X_GPIO_OUT_GPIO);
 
 	/* enable reset button */
 	ath79_gpio_output_select(CHOWCHOW_GPIO_CONF_BTN, AR934X_GPIO_OUT_GPIO);
@@ -243,6 +238,11 @@ static void __init chowchow_setup(void)
 
 	/* Register Software SPI controller */
 	ds_register_spi();
+
+	/* registering GPIO3 */
+	gpio_request_one(CHOWCHOW_GPIO_GPIO3,
+		GPIOF_OUT_INIT_LOW | GPIOF_EXPORT_DIR_FIXED,
+		"GPIO3");
 }
 
 MIPS_MACHINE(ATH79_MACH_LININO_TIAN, "linino-tian", "Arduino Tian", chowchow_setup);
