@@ -34,7 +34,7 @@
 #include "linux/gpio.h"
 #include <linux/spi/spi_gpio.h>
 
-#define CHOWCHOW_GPIO_MCU_RESET	17
+#define CHOWCHOW_GPIO_MCU_RESET	0
 
 #define TIAN_GPIO_SWDIO			13
 #define TIAN_GPIO_SWDCLK		14
