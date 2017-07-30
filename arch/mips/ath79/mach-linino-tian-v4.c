@@ -138,7 +138,7 @@ static void __init ds_setup_level_shifter_oe(void)
 }
 
 
-static void __init tian_setup(void)
+static void __init tian_setup_v4(void)
 {
 	u8 *art = (u8 *) KSEG1ADDR(0x1fff0000);
 	static u8 mac[6];
@@ -241,4 +241,4 @@ static void __init tian_setup(void)
 		"GPIO3");
 }
 
-MIPS_MACHINE(ATH79_MACH_LININO_TIAN, "linino-tian-v4", "Arduino Tian v4", tian_setup);
+MIPS_MACHINE(ATH79_MACH_LININO_TIAN_V4, "linino-tian-v4", "Arduino Tian v4", tian_setup_v4);

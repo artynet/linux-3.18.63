@@ -235,6 +235,7 @@ enum ath79_mach_type {
 	ATH79_MACH_LININO_FREEDOG,	/* Linino Freedog */
 	ATH79_MACH_LININO_LEI,		/* Linino Lei */
 	ATH79_MACH_LININO_TIAN,		/* Linino Tian */
+	ATH79_MACH_LININO_TIAN_V4,	/* Linino Tian v4 */
 	ATH79_MACH_LININO_CHIWAWA,	/* Linino Chiwawa */
 	ATH79_MACH_LININO_YUN_MINI,	/* Linino Yun mini */
 };
