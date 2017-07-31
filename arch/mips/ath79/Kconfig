@@ -1401,6 +1401,97 @@ config ATH79_MACH_QIHOO_C301
 	select ATH79_DEV_USB
 	select ATH79_NVRAM
 
+config ATH79_MACH_LININO_YUN
+	bool "Arduino YUN support"
+	select SOC_AR933X
+	select ATH79_DEV_ETH
+	select ATH79_DEV_GPIO_BUTTONS
+	select ATH79_DEV_LEDS_GPIO
+	select ATH79_DEV_M25P80
+	select ATH79_DEV_USB
+	select ATH79_DEV_WMAC
+	help
+		Say 'Y' here if you want your kernel to support
+		Arduino Yun.
+
+config ATH79_MACH_LININO_ONE
+	bool "Linino One support"
+	select SOC_AR933X
+	select ATH79_DEV_ETH
+	select ATH79_DEV_GPIO_BUTTONS
+	select ATH79_DEV_LEDS_GPIO
+	select ATH79_DEV_M25P80
+	select ATH79_DEV_USB
+	select ATH79_DEV_WMAC
+	help
+		Say 'Y' here if you want your kernel to support
+		Linino One.
+
+config ATH79_MACH_LININO_FREEDOG
+	bool "Linino Freedog support"
+	select SOC_AR933X
+	select ATH79_DEV_ETH
+	select ATH79_DEV_GPIO_BUTTONS
+	select ATH79_DEV_LEDS_GPIO
+	select ATH79_DEV_M25P80
+	select ATH79_DEV_USB
+	select ATH79_DEV_WMAC
+	help
+		Say 'Y' here if you want your kernel to support
+	 	Linino Freedog.
+
+config ATH79_MACH_LININO_LEI
+	bool "Linino Lei support"
+	select SOC_AR934X
+	select ATH79_DEV_ETH
+	select ATH79_DEV_GPIO_BUTTONS
+	select ATH79_DEV_LEDS_GPIO
+	select ATH79_DEV_M25P80
+	select ATH79_DEV_USB
+	select ATH79_DEV_WMAC
+	help
+		Say 'Y' here if you want your kernel to support
+		Linino Lei.
+
+config ATH79_MACH_LININO_TIAN
+	bool "Linino Tian support"
+	select SOC_AR934X
+	select ATH79_DEV_ETH
+	select ATH79_DEV_GPIO_BUTTONS
+	select ATH79_DEV_LEDS_GPIO
+	select ATH79_DEV_M25P80
+	select ATH79_DEV_USB
+	select ATH79_DEV_WMAC
+	help
+		Say 'Y' here if you want your kernel to support
+		Linino Tian.
+
+config ATH79_MACH_LININO_CHIWAWA
+    bool "Linino Chiwawa support"
+    select SOC_AR933X
+    select ATH79_DEV_ETH
+    select ATH79_DEV_GPIO_BUTTONS
+    select ATH79_DEV_LEDS_GPIO
+    select ATH79_DEV_M25P80
+    select ATH79_DEV_USB
+    select ATH79_DEV_WMAC
+    help
+		Say 'Y' here if you want your kernel to support
+		Linino Chiwawa.
+
+config ATH79_MACH_LININO_YUN_MINI
+    bool "Arduino YUN mini support"
+    select SOC_AR933X
+    select ATH79_DEV_ETH
+    select ATH79_DEV_GPIO_BUTTONS
+    select ATH79_DEV_LEDS_GPIO
+    select ATH79_DEV_M25P80
+    select ATH79_DEV_USB
+    select ATH79_DEV_WMAC
+    help
+		Say 'Y' here if you want your kernel to support
+		Arduino Yun mini.
+
 endmenu
 
 config SOC_AR71XX

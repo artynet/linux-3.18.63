@@ -230,6 +230,13 @@ enum ath79_mach_type {
 	ATH79_MACH_WZR_450HP2,		/* Buffalo WZR-450HP2 */
 	ATH79_MACH_ZCN_1523H_2,		/* Zcomax ZCN-1523H-2-xx */
 	ATH79_MACH_ZCN_1523H_5,		/* Zcomax ZCN-1523H-5-xx */
+	ATH79_MACH_LININO_YUN,		/* Linino Yun */
+	ATH79_MACH_LININO_ONE,		/* Linino One */
+	ATH79_MACH_LININO_FREEDOG,	/* Linino Freedog */
+	ATH79_MACH_LININO_LEI,		/* Linino Lei */
+	ATH79_MACH_LININO_TIAN,		/* Linino Tian */
+	ATH79_MACH_LININO_CHIWAWA,	/* Linino Chiwawa */
+	ATH79_MACH_LININO_YUN_MINI,	/* Linino Yun mini */
 };
 
 #endif /* _ATH79_MACHTYPE_H */
