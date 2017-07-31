@@ -35,35 +35,27 @@
 #include <linux/spi/spi_gpio.h>
 
 #define TIAN_GPIO_MCU_RESET	0
-#define TIAN_GPIO_LED0		11
-#define TIAN_GPIO_LED1		12
 
-#define LININO_TIAN 1
-
-#ifdef LININO_TIAN
 #define TIAN_GPIO_SWDIO			13
 #define TIAN_GPIO_SWDCLK		14
 #define TIAN_GPIO_CONF_BTN	17
-#else
-#define TIAN_GPIO_UART0_RX	13
-#define TIAN_GPIO_UART0_TX	14
-#define TIAN_GPIO_CONF_BTN	0
-#endif
+#define TIAN_GPIO_LED0		11
+#define TIAN_GPIO_LED1		12
+#define TIAN_GPIO_LED2		2
+#define TIAN_GPIO_GPIO3		3
+
 #define TIAN_GPIO_UART1_RX	9
 #define TIAN_GPIO_UART1_TX	10
 #define TIAN_GPIO_OE2		15
 #define TIAN_GPIO_UART_POL	GPIOF_OUT_INIT_LOW
-
-#define	TIAN_GPIO_SPI_SCK	4
-#define	TIAN_GPIO_SPI_MISO	3
-#define	TIAN_GPIO_SPI_MOSI	2
-#define TIAN_GPIO_SPI_CS0	1
 
 #define AR934X_GPIO_UART1_TD_OUT	79	/* table 2.16 */
 #define AR934X_GPIO_UART0_SOUT	24	/* table 2.16 */
 
 #define TIAN_GPIO_SPI_INTERRUPT	16
 #define DS_PCIE_CALDATA_OFFSET	0x5000
+
+/* * * * * * * * * * * * * * * * * * * LED * * * * * * * * * * * * * * * * * */
 
 static struct gpio_led tian_leds_gpio[] __initdata = {
 	{
@@ -73,6 +65,11 @@ static struct gpio_led tian_leds_gpio[] __initdata = {
 	}, {
 		.name		= "wlan",
 		.gpio		= TIAN_GPIO_LED1,
+		.active_low	= 1,
+	},
+	{
+		.name		= "LED2",
+		.gpio		= TIAN_GPIO_LED2,
 		.active_low	= 1,
 	}
 };
@@ -115,49 +112,6 @@ static struct mdio_board_info db120_mdio0_info[] = {
 	},
 };
 
-/* * * * * * * * * * * * * * * * * * * SPI * * * * * * * * * * * * * * * * * */
-
-/*
- * The SPI bus between the main processor and the MCU is available only in the
- * following board: YUN, FREEDOG
- */
-
-static struct spi_gpio_platform_data spi_bus1 = {
-	.sck = TIAN_GPIO_SPI_SCK,
-	.mosi = TIAN_GPIO_SPI_MOSI,
-	.miso = TIAN_GPIO_SPI_MISO,
-	.num_chipselect = LININO_N_SPI_CHIP_SELECT,
-};
-
-static struct platform_device linino_spi1_device = {
-	.name	= "spi_gpio",
-	.id	= 1,
-	.dev.platform_data = &spi_bus1,
-};
-
-#ifndef LININO_TIAN
-/* SPI devices on Linino */
-static struct spi_board_info linino_spi_info[] = {
-	/*{
-		.bus_num		= 1,
-		.chip_select		= 0,
-		.max_speed_hz		= 10000000,
-		.mode			= 0,
-		.modalias		= "spidev",
-		.controller_data	= (void *) SPI_CHIP_SELECT,
-	},*/
-	{
-		.bus_num		= 1,
-		.chip_select		= 0,
-		.max_speed_hz		= 10000000, /* unused but required */
-		.mode			= 0,
-		.modalias		= "atmega32u4",
-		.controller_data	= (void *) TIAN_GPIO_SPI_CS0,
-		.platform_data		= (void *) TIAN_GPIO_SPI_INTERRUPT,
-	},
-};
-#endif
-
 /**
  * Enable the software SPI controller emulated by GPIO signals
  */
@@ -165,18 +119,7 @@ static void ds_register_spi(void) {
 	pr_info("mach-linino: enabling GPIO SPI Controller");
 
 	/* Enable level shifter on SPI signals */
-#ifdef LININO_TIAN
 	gpio_set_value(TIAN_GPIO_OE2, 0);
-#else
-	gpio_set_value(TIAN_GPIO_OE2, 1);
-#endif
-
-#ifndef LININO_TIAN
-	/* Register SPI devices */
-	spi_register_board_info(linino_spi_info, ARRAY_SIZE(linino_spi_info));
-#endif
-	/* Register GPIO SPI controller */
-	platform_device_register(&linino_spi1_device);
 }
 
 /*
@@ -206,13 +149,11 @@ static void __init tian_setup(void)
 	/* make lan / wan leds software controllable */
 	ath79_gpio_output_select(TIAN_GPIO_LED0, AR934X_GPIO_OUT_GPIO);
 	ath79_gpio_output_select(TIAN_GPIO_LED1, AR934X_GPIO_OUT_GPIO);
+	ath79_gpio_output_select(TIAN_GPIO_LED2, AR934X_GPIO_OUT_GPIO);
 
 	/* enable reset button */
 	ath79_gpio_output_select(TIAN_GPIO_CONF_BTN, AR934X_GPIO_OUT_GPIO);
 	ath79_gpio_function_enable(AR934X_GPIO_FUNC_JTAG_DISABLE);
-	ath79_gpio_output_select(TIAN_GPIO_SPI_SCK, AR934X_GPIO_OUT_GPIO);
-	ath79_gpio_output_select(TIAN_GPIO_SPI_MISO, AR934X_GPIO_OUT_GPIO);
-	ath79_gpio_output_select(TIAN_GPIO_SPI_MOSI, AR934X_GPIO_OUT_GPIO);
 	ath79_gpio_output_select(TIAN_GPIO_MCU_RESET, AR934X_GPIO_OUT_GPIO);
 
 	/* UART1 (high-speed) configuration */
@@ -244,30 +185,9 @@ static void __init tian_setup(void)
 	v |= (TIAN_GPIO_UART1_RX << 16);
 	__raw_writel(v, reg);
 
-#ifdef LININO_TIAN
+	/*custom gpios for Tian*/
 	ath79_gpio_output_select(TIAN_GPIO_SWDIO, AR934X_GPIO_OUT_GPIO);
 	ath79_gpio_output_select(TIAN_GPIO_SWDCLK, AR934X_GPIO_OUT_GPIO);
-#else
-	/* UART0 (low-speed) configuration */
-	r = gpio_request(TIAN_GPIO_UART0_TX, NULL);
-	if (r) {
-		pr_err("gpio_request failed on gpio %d: %d\n",
-		       TIAN_GPIO_UART0_TX, r);
-		return;
-	}
-	gpio_direction_output(TIAN_GPIO_UART0_TX, 0);
-	ath79_gpio_output_select(TIAN_GPIO_UART0_TX,
-				   AR934X_GPIO_UART0_SOUT);
-	gpio_free(TIAN_GPIO_UART0_TX);
-
-	/* Mux for UART0 input: UART0 multiplexing is GPIO_IN_ENABLE1, see
-	 * table 8-4 */
-	reg = ath79_gpio_base + AR934X_GPIO_IN_ENABLE1;
-	v = __raw_readl(reg);
-	v &= ~0x0000ff00;
-	v |= (TIAN_GPIO_UART0_RX << 8);
-	__raw_writel(v, reg);
-#endif
 
 	ath79_register_m25p80(NULL);
 
@@ -314,6 +234,11 @@ static void __init tian_setup(void)
 
 	/* Register Software SPI controller */
 	ds_register_spi();
+
+	/* registering GPIO3 */
+	gpio_request_one(TIAN_GPIO_GPIO3,
+		GPIOF_OUT_INIT_LOW | GPIOF_EXPORT_DIR_FIXED,
+		"GPIO3");
 }
 
-MIPS_MACHINE(ATH79_MACH_LININO_TIAN, "linino-tian", "Arduino Tian", tian_setup);
+MIPS_MACHINE(ATH79_MACH_LININO_TIAN, "linino-tian-v4", "Arduino Tian v4", tian_setup);
